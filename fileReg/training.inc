@@ -226,6 +226,7 @@ read_line:
     add     esp,4*5
     pop     ebp
     ret
+
 	
 section '.idata' import data readable
  
@@ -235,9 +236,14 @@ library kernel,'kernel32.dll',\
 import  kernel,\
         ExitProcess,'ExitProcess',\
         GetStdHandle,'GetStdHandle',\
-        ReadFile,'ReadFile'
+        ReadFile,'ReadFile', \
+        CreateFileA,'CreateFileA', \
+        CloseHandle,'CloseHandle', \
+        GetLastError,'GetLastError'
+
 
 import  msvcrt,\
         printf, 'printf',\
         scanf, 'scanf', \
         strtoul, 'strtoul'
+

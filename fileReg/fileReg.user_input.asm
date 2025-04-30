@@ -6,7 +6,7 @@ entry start
 
 section '.data' data readable writeable
 input_msg db "Enter a number in hex format: ", 13, 10, 0
-output_msg db "The number in big-endian format is: ", 13, 10, 0
+output_msg db "The number in big-endian format is: 0x", 0
 
 
 section '.text' code readable executable
@@ -16,6 +16,7 @@ start:
     call print_str ; call the function to print the string
     ; Read the input value in hex format
     call read_hex
+    ; Convert the input value from little-endian to big-endian
     mov edi, eax ; move the input value to edi for the function call
     call little2big ; call the function to convert little-endian to big-endian
     lea esi , [output_msg] ; load the address of the output message into esi
