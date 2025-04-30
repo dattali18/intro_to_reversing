@@ -15,6 +15,7 @@ section '.data' data readable writeable
     ; input_msg
     input_msg db "Reading from input.txt", 13, 10, 0
     output_msg db "The number in big-endian is: 0x", 0
+    output_0x db "0x", 0
     debug_msg_open db "[DEBUG]: File opened successfully.", 13, 10, 0
     debug_msg_read db "[DEBUG]: File read successfully.", 13, 10, 0
     debug_msg_close db "[DEBUG]: File closed successfully.", 13, 10, 0
@@ -40,6 +41,8 @@ start:
     ; result is now in eax
     mov edi, eax
     call little2big
+    lea esi, [output_0x]
+    call print_str
     call print_eax
   
 .exit_program:
