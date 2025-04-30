@@ -5,13 +5,21 @@ format PE console
 entry start
 
 section '.data' data readable writeable
-x dd 0x12345678 ; example little-endian value
+input_msg db "Enter a number in hex format: ", 13, 10, 0
+output_msg db "The number in big-endian format is: ", 13, 10, 0
 
 
 section '.text' code readable executable
 start:
-    mov edi, 0x12345678 ; example little-endian value
+    ; Print the input message
+    lea esi , [input_msg] ; load the address of the input message into esi
+    call print_str ; call the function to print the string
+    ; Read the input value in hex format
+    call read_hex
+    mov edi, eax ; move the input value to edi for the function call
     call little2big ; call the function to convert little-endian to big-endian
+    lea esi , [output_msg] ; load the address of the output message into esi
+    call print_str ; call the function to print the string
     ; call print eax
     call print_eax ; print the result in eax
 
