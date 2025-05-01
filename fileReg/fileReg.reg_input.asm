@@ -21,16 +21,16 @@ section '.data' data readable writeable
     read_bytes_msg db "Bytes read: %d", 13, 10, 0
     error_code_msg db "Error Code: %d", 13, 10, 0
     ; Change this in your data section
-    registry_key db "HKEY_CURRENT_USER\\Software\\Assembly", 0
+    registry_key db "Software\\Assembly", 0
     registry_value db "input", 0
     registry_handle dd 0      ; Initialize to 0
     reg_value_size dd 4       ; Size of DWORD in bytes
     reg_buffer dd 0           ; Initialize to 0
-    reg_type dd 0             ; To receive the value type
+    reg_type dd 0            ; To receive the value type
     reg_msg db "Reading from registry HKCU\Software\Assembly\input", 13, 10, 0
     debug_open_reg db "[DEBUG]: Registry key opened successfully.", 13, 10, 0
     debug_read_reg db "[DEBUG]: Registry value read successfully.", 13, 10, 0
-    debug_reg_error db "[DEBUG]: Registry error occurred. Code: %d", 13, 10, 0
+    debug_reg_error db "[DEBUG]: Registry error occurred. Code:", 13, 10, 0
 
 
 ; In your text section, modify start: to include the registry reading option
@@ -61,84 +61,82 @@ start:
     push 0
     call [ExitProcess]
 
-
-; Your read_hex_from_registry function
 read_hex_from_registry:
-    ; This function reads a hex value from HKCU\Software\Assembly\input
-    ; and returns it in eax
-    
     push ebp
     mov ebp, esp
-    
-    ; In your read_hex_from_registry function
+
+    ; Open the registry key
     push registry_handle      ; Address to store the handle
-    push 0x0100               ; FLAG_KEY_WOW64_64KEY (0x0100)
+    push 0x0000               ; Reserved, must be 0
     push 0x20019              ; KEY_READ access right
-    push registry_key         ; Key name
+    push registry_key         ; Key name (relative path)
     push 0x80000001           ; HKEY_CURRENT_USER
     call [RegOpenKeyExA]
-    
+
     ; Check if key opened successfully
     test eax, eax
     jnz .reg_open_error
-    
+
     ; Debug message for successful key opening
-    lea esi, [debug_open_reg]
+    mov esi, debug_open_reg
     call print_str
-    
+
     ; Read the registry value
-    mov ecx, reg_type        ; Location to store the type
+    mov ecx, reg_type          ; Location to store the type
     push ecx                   ; lpType
-    mov ecx, reg_buffer      ; Buffer for data
+    mov ecx, reg_buffer        ; Buffer for data
     push ecx                   ; lpData
-    mov ecx, reg_value_size  ; Location storing buffer size
+    mov ecx, reg_value_size    ; Location storing buffer size
     push ecx                   ; lpcbData
     push 0                     ; lpReserved (NULL)
-    push registry_value        ; Value name (input)
+    push registry_value        ; Value name ("input")
     push dword [registry_handle] ; Key handle
     call [RegQueryValueExA]
-    
+
     ; Check if value read successfully
     test eax, eax
     jnz .reg_query_error
-    
+
     ; Debug message for successful value reading
-    lea esi, [debug_read_reg]
+    mov esi, debug_read_reg
     call print_str
-    
+
     ; Close the registry key
     push dword [registry_handle]
     call [RegCloseKey]
-    
+
     ; Return the read value in eax
     mov eax, [reg_buffer]
-    
+
     pop ebp
     ret
 
 .reg_open_error:
-    ; Handle registry open error
-    push eax                  ; Save error code for formatting
-    push debug_reg_error      ; Error message format
-    call [printf]             ; Print error
-    add esp, 8                ; Clean stack
+    call [GetLastError]        ; Retrieve error code immediately
+    mov esi, eax               ; Save error code in esi
+    call print_eax             ; Print error code for debugging
+    mov esi, debug_reg_error   ; Error message format
+    call print_str
+    add esp, 4                 ; Clean stack
     jmp .exit_error
 
 .reg_query_error:
-    ; Handle registry query error  
-    push eax                  ; Save error code for formatting
-    push debug_reg_error      ; Error message format
-    call [printf]             ; Print error
-    add esp, 8                ; Clean stack
-    
+    call [GetLastError]        ; Retrieve error code immediately
+    mov esi, eax               ; Save error code in esi
+    call print_eax             ; Print error code for debugging
+    mov esi, debug_reg_error   ; Error message format
+    call print_str
+    add esp, 4                 ; Clean stack
+
     ; Close the registry key even though query failed
     push dword [registry_handle]
     call [RegCloseKey]
+    jmp .exit_error
 
 .exit_error:
-    ; Exit with error
     push 1
     call [ExitProcess]
+
 ; uint32_t little2big(uint32_t x)
 ; x : in edi
 ; return : eax
