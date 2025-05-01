@@ -12,7 +12,6 @@ section '.data' data readable writeable
     reg_value_size dd 4
     reg_buffer dd 0
     reg_type dd 0
-    
     ; Messages
     reg_msg db "Reading from registry HKCU\\Software\\Assembly\\input", 13, 10, 0
     debug_key db "Trying registry key: ", 0
@@ -25,7 +24,7 @@ section '.data' data readable writeable
     output_msg db "The number in the file is: 0x", 0
     output_0x db "The converted number is: 0x", 0
     newline db 13, 10, 0
-    
+    debug_msg db "[DEBUG]: ", 0 
     ; Error messages
     err_not_found db "Key or value not found", 0
     err_access_denied db "Access denied", 0
@@ -103,7 +102,7 @@ read_hex_from_registry:
     ; Debug: Print the handle value
     mov esi, debug_handle
     call print_str
-    mov eax, [registry_handle]
+    mov eax, dword [registry_handle]
     call print_eax
     mov esi, newline
     call print_str
