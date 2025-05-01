@@ -8,6 +8,8 @@ section '.data' data readable writeable
     ; Registry-related data
     registry_key db "SOFTWARE\\Assembly", 0
     registry_value db "input", 0
+    ; registry_key db "Test", 0
+    ; registry_value db "test", 0
     registry_handle dd 0
     reg_value_size dd 4
     reg_buffer dd 0
@@ -81,11 +83,11 @@ read_hex_from_registry:
 
     ; Open the registry key
     lea eax, [registry_handle]
-    push eax                    ; Address to store the handle
-    push 0                      ; Reserved, must be 0
-    push 0x20019                ; KEY_READ access right
-    push registry_key           ; Key name (relative path)
-    push 0x80000001             ; HKEY_CURRENT_USER
+    push eax                    ; phkResult - Address to store the handle
+    push 0x20019                ; samDesired - KEY_READ access right
+    push 0                      ; ulOptions - Reserved, must be 0
+    push registry_key           ; lpSubKey - Key name (relative path)
+    push 0x80000001             ; hKey - HKEY_CURRENT_USER
     call [RegOpenKeyExA]
 
     ; Store return value for error reporting
@@ -107,16 +109,15 @@ read_hex_from_registry:
     mov esi, newline
     call print_str
 
-    ; Read the registry value
-    lea eax, [reg_type]
-    push eax                   ; lpType
+    lea eax, [reg_value_size]
+    push eax                   ; lpcbData - LAST parameter
     lea eax, [reg_buffer]
     push eax                   ; lpData
-    lea eax, [reg_value_size]
-    push eax                   ; lpcbData
+    lea eax, [reg_type]
+    push eax                   ; lpType
     push 0                     ; lpReserved
-    push registry_value        ; Value name
-    push dword [registry_handle] ; Key handle
+    push registry_value        ; lpValueName
+    push dword [registry_handle] ; hKey - FIRST parameter
     call [RegQueryValueExA]
 
     ; Store return value for error reporting
