@@ -1,7 +1,6 @@
 ; Daniel Attali 29/04/2025
 include 'win32a.inc'
 
-
 format PE console
 entry start
 
@@ -14,8 +13,8 @@ section '.data' data readable writeable
     bytes_read    dd ?
     ; input_msg
     input_msg db "Reading from input.txt", 13, 10, 0
-    output_msg db "The number in big-endian is: 0x", 0
-    output_0x db "0x", 0
+    output_msg db "The number in the file is: 0x", 0
+    output_0x db "The converted number is: 0x", 0
     debug_msg_open db "[DEBUG]: File opened successfully.", 13, 10, 0
     debug_msg_read db "[DEBUG]: File read successfully.", 13, 10, 0
     debug_msg_close db "[DEBUG]: File closed successfully.", 13, 10, 0
@@ -74,9 +73,9 @@ read_hex_from_file:
     ; Store file handle
     mov [file_handle], eax
     
-    ; [DEBUG]
-    lea esi, [debug_msg_open]
-    call print_str
+    ; ; [DEBUG]
+    ; lea esi, [debug_msg_open]
+    ; call print_str
 
     ; Read the file
     mov ebx, [file_handle]     ; Preserve file handle in ebx
@@ -96,9 +95,9 @@ read_hex_from_file:
     cmp dword [bytes_read], 0
     je .get_error
     
-    ; [DEBUG]
-    lea esi, [debug_msg_read]
-    call print_str
+    ; ; [DEBUG]
+    ; lea esi, [debug_msg_read]
+    ; call print_str
     
     ; Close the file
     push [file_handle]
@@ -108,9 +107,9 @@ read_hex_from_file:
     test eax, eax
     jz .get_error
     
-    ; [DEBUG]
-    lea esi, [debug_msg_close]
-    call print_str
+    ; ; [DEBUG]
+    ; lea esi, [debug_msg_close]
+    ; call print_str
 
     ; Convert the hex string to a number
     lea eax, [input_buffer]

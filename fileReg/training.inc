@@ -239,7 +239,10 @@ import  kernel,\
         ReadFile,'ReadFile', \
         CreateFileA,'CreateFileA', \
         CloseHandle,'CloseHandle', \
-        GetLastError,'GetLastError'
+        GetLastError,'GetLastError', \
+        RegOpenKeyExA,'RegOpenKeyExA', \
+        RegQueryValueExA,'RegQueryValueExA', \
+        RegCloseKey,'RegCloseKey'
 
 
 import  msvcrt,\
