@@ -232,13 +232,24 @@ section '.idata' import data readable
 library kernel,'kernel32.dll',\
         msvcrt,'msvcrt.dll'
  
-import  kernel,\
-        ExitProcess,'ExitProcess',\
-        GetStdHandle,'GetStdHandle',\
-        ReadFile,'ReadFile', \
-        GetConsoleScreenBufferInfo,'GetConsoleScreenBufferInfo', \
-        FillConsoleOutputCharacter,'FillConsoleOutputCharacter', \
-        SetConsoleCursorPosition,'SetConsoleCursorPosition'
+; import  kernel,\
+;         ExitProcess,'ExitProcess',\
+;         GetStdHandle,'GetStdHandle',\
+;         ReadFile,'ReadFile', \
+;         GetConsoleScreenBufferInfo,'GetConsoleScreenBufferInfo', \
+;         FillConsoleOutputCharacter,'FillConsoleOutputCharacter', \
+;         SetConsoleCursorPosition,'SetConsoleCursorPosition', \
+;         FillConsoleOutputAttribute, 'FillConsoleOutputAttribute'
+
+import kernel, \
+        GetStdHandle, 'GetStdHandle', \
+        GetConsoleScreenBufferInfo, 'GetConsoleScreenBufferInfo', \
+        FillConsoleOutputCharacter, 'FillConsoleOutputCharacterA', \
+        FillConsoleOutputAttribute, 'FillConsoleOutputAttribute', \
+        SetConsoleCursorPosition, 'SetConsoleCursorPosition', \
+        ExitProcess, 'ExitProcess', \
+        ReadFile, 'ReadFile'
+
 
 import  msvcrt,\
         printf, 'printf',\

@@ -13,6 +13,15 @@ section '.data' data readable writeable
     y          dd 0
     buffer    db 2 dup(0)       ; Buffer for key input
 
+    hConsole dd 0                        ; Handle to the console
+    csbi db 28 dup(0)                    ; Console screen buffer info structure (22 bytes)
+    charsWritten dd 0                    ; Number of characters written
+    consoleSize dd 0                     ; Total size of the console screen buffer
+
+    exit_invalid_handle_value_msg db "[DEBUG] Exit invalid handle value", 13, 10, 0
+    exit_buffer_info_failed_msg db "[DEBUG] Exit buffer info failed", 13, 10, 0
+
+
 section '.text' code readable executable
 start:
 
@@ -205,65 +214,62 @@ clear_screen:
     pushad
 
     STD_OUTPUT_HANDLE equ -11
+    INVALID_HANDLE_VALUE equ -1
+    ; Get handle to the console's standard output
+    invoke GetStdHandle, STD_OUTPUT_HANDLE
+    ; call print_eax
+    mov [hConsole], eax
 
-    ; Step 1: Get the handle to the standard output
-    push STD_OUTPUT_HANDLE
-    call [GetStdHandle]
-    call print_eax
-    test eax, eax                 ; Check if the handle is valid
-    js .error_exit                ; Exit if an error occurs
-    mov esi, eax                  ; Store the handle in `esi`
+    ; Check if the handle is invalid
+    ; cmp eax, INVALID_HANDLE_VALUE
+    ; je .exit_invalid_handle_value
 
-    ; Step 2: Get console screen buffer info
-    sub esp, 28                   ; Allocate space for CONSOLE_SCREEN_BUFFER_INFO (28 bytes)
-    lea edi, [esp]                ; Use `edi` to point to the buffer
-    push edi                      ; lpConsoleScreenBufferInfo
-    push esi                      ; hConsoleOutput
-    call [GetConsoleScreenBufferInfo]
-    test eax, eax                 ; Check return value
-    jz .error_exit                ; Exit if an error occurs
+    ; Get console screen buffer information
+    invoke GetConsoleScreenBufferInfo, [hConsole], csbi
+    ; call print_eax
 
-    ; Step 3: Calculate total cells to clear (width * height)
-    movzx ecx, word [edi + 0x0C]  ; Screen width (dwSize.X)
-    movzx edx, word [edi + 0x0E]  ; Screen height (dwSize.Y)
-    imul ecx, edx                 ; Total cells = width * height
-    mov ebx, ecx                  ; Store total cells in `ebx`
+    ; test eax, eax
+    ; jz .exit_buffer_info_failed
 
-    ; Step 4: Fill the console with spaces
-    mov eax, ' '                  ; ASCII space character
-    lea ecx, [esp + 28]           ; Pointer to store the number of characters written
-    push ecx                      ; lpNumberOfCharsWritten
-    push ebx                      ; nLength (total cells)
-    push eax                      ; cCharacter (' ')
-    push esi                      ; hConsoleOutput
-    call [FillConsoleOutputCharacter]
-    test eax, eax                 ; Check return value
-    jz .error_exit                ; Exit if an error occurs
+    ; Calculate the size of the console buffer (width * height)
+    movzx eax, word [csbi + 4]           ; Zero-extend csbi.dwSize.Y (offset 4, 2 bytes) into eax
+    movzx ecx, word [csbi + 2]           ; Zero-extend csbi.dwSize.X (offset 2, 2 bytes) into ecx
+    imul eax, ecx                        ; Multiply eax (height) by ecx (width)
+    mov [consoleSize], eax               ; Store the result in consoleSize
+    ; call print_eax
 
-    ; Step 5: Reset the cursor position to the top-left corner
-    xor eax, eax                  ; X = 0
-    xor edx, edx                  ; Y = 0
-    mov word [edi], 0             ; Set X in COORD structure
-    mov word [edi + 2], 0         ; Set Y in COORD structure
-    push edi                      ; Pointer to COORD structure
-    push esi                      ; hConsoleOutput
-    call [SetConsoleCursorPosition]
-    test eax, eax                 ; Check return value
-    jz .error_exit                ; Exit if an error occurs
+    ; Fill the console with spaces
+    mov eax, [consoleSize]               ; Total console size
+    xor ecx, ecx                         ; Start at top-left corner (0, 0)
+    lea edx, [csbi + 10]                 ; Address of csbi.dwCursorPosition
+    invoke FillConsoleOutputCharacter, [hConsole], ' ', eax, edx, charsWritten
 
-    ; Clean up and return
-    add esp, 28                   ; Free allocated space for CONSOLE_SCREEN_BUFFER_INFO
+    ; Reset the console attributes
+    mov eax, [consoleSize]               ; Total console size
+    mov ecx, dword [csbi + 8]            ; csbi.wAttributes (offset 8)
+    lea edx, [csbi + 10]                 ; Address of csbi.dwCursorPosition
+    invoke FillConsoleOutputAttribute, [hConsole], ecx, eax, edx, charsWritten
+
+    ; Move the cursor back to the top-left corner
+    xor eax, eax
+    mov word [csbi + 10], ax             ; csbi.dwCursorPosition.X (offset 10, 2 bytes)
+    mov word [csbi + 12], ax             ; csbi.dwCursorPosition.Y (offset 12, 2 bytes)
+    lea edx, [csbi + 10]                 ; Address of csbi.dwCursorPosition
+    invoke SetConsoleCursorPosition, [hConsole], edx
+
     popad
     mov esp, ebp
     pop ebp
-    ret
-
-.error_exit:
-    ; If an error occurs, clean up and return
-    add esp, 22                   ; Free allocated space for CONSOLE_SCREEN_BUFFER_INFO
-    popad
-    mov esp, ebp
-    pop ebp
-    ret
+    ret 
+.exit_invalid_handle_value:
+    ; Exit the program
+    mov esi, exit_invalid_handle_value_msg
+    call print_str
+    jmp exit
+.exit_buffer_info_failed:
+    mov esi, exit_buffer_info_failed_msg
+    call print_str
+exit:
+    invoke ExitProcess, 0
 
 include 'training.inc'
