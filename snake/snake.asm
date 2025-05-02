@@ -5,13 +5,13 @@ format PE console
 entry start
 
 section '.data' data readable writeable
-hash_str     db "#", 0
-space_str    db " ", 0
-snake_str    db "O", 0
-newline_str  db 13, 10, 0     ; This is correct: CRLF only for newline
-x          dd 0
-y          dd 0
-buffer    db 2 dup(0)       ; Buffer for key input
+    hash_str     db "#", 0
+    space_str    db " ", 0
+    snake_str    db "O", 0
+    newline_str  db 13, 10, 0     ; This is correct: CRLF only for newline
+    x          dd 0
+    y          dd 0
+    buffer    db 2 dup(0)       ; Buffer for key input
 
 section '.text' code readable executable
 start:
@@ -72,8 +72,6 @@ start:
 .exit_program:
     push 0
     call [ExitProcess]
-
-
 
 ; print_frame(int x, int y)
 ; get the x, and y arguments from the data section
@@ -201,12 +199,71 @@ get_key:
 
     ret
 
-; clear_screen:
-; Uses the Win32 API to clear the console screen
 clear_screen:
+    push ebp
+    mov ebp, esp
+    pushad
+
+    STD_OUTPUT_HANDLE equ -11
+
+    ; Step 1: Get the handle to the standard output
+    push STD_OUTPUT_HANDLE
+    call [GetStdHandle]
+    call print_eax
+    test eax, eax                 ; Check if the handle is valid
+    js .error_exit                ; Exit if an error occurs
+    mov esi, eax                  ; Store the handle in `esi`
+
+    ; Step 2: Get console screen buffer info
+    sub esp, 28                   ; Allocate space for CONSOLE_SCREEN_BUFFER_INFO (28 bytes)
+    lea edi, [esp]                ; Use `edi` to point to the buffer
+    push edi                      ; lpConsoleScreenBufferInfo
+    push esi                      ; hConsoleOutput
+    call [GetConsoleScreenBufferInfo]
+    test eax, eax                 ; Check return value
+    jz .error_exit                ; Exit if an error occurs
+
+    ; Step 3: Calculate total cells to clear (width * height)
+    movzx ecx, word [edi + 0x0C]  ; Screen width (dwSize.X)
+    movzx edx, word [edi + 0x0E]  ; Screen height (dwSize.Y)
+    imul ecx, edx                 ; Total cells = width * height
+    mov ebx, ecx                  ; Store total cells in `ebx`
+
+    ; Step 4: Fill the console with spaces
+    mov eax, ' '                  ; ASCII space character
+    lea ecx, [esp + 28]           ; Pointer to store the number of characters written
+    push ecx                      ; lpNumberOfCharsWritten
+    push ebx                      ; nLength (total cells)
+    push eax                      ; cCharacter (' ')
+    push esi                      ; hConsoleOutput
+    call [FillConsoleOutputCharacter]
+    test eax, eax                 ; Check return value
+    jz .error_exit                ; Exit if an error occurs
+
+    ; Step 5: Reset the cursor position to the top-left corner
+    xor eax, eax                  ; X = 0
+    xor edx, edx                  ; Y = 0
+    mov word [edi], 0             ; Set X in COORD structure
+    mov word [edi + 2], 0         ; Set Y in COORD structure
+    push edi                      ; Pointer to COORD structure
+    push esi                      ; hConsoleOutput
+    call [SetConsoleCursorPosition]
+    test eax, eax                 ; Check return value
+    jz .error_exit                ; Exit if an error occurs
+
+    ; Clean up and return
+    add esp, 28                   ; Free allocated space for CONSOLE_SCREEN_BUFFER_INFO
+    popad
+    mov esp, ebp
+    pop ebp
     ret
 
-
-
+.error_exit:
+    ; If an error occurs, clean up and return
+    add esp, 22                   ; Free allocated space for CONSOLE_SCREEN_BUFFER_INFO
+    popad
+    mov esp, ebp
+    pop ebp
+    ret
 
 include 'training.inc'

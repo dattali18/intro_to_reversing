@@ -235,7 +235,10 @@ library kernel,'kernel32.dll',\
 import  kernel,\
         ExitProcess,'ExitProcess',\
         GetStdHandle,'GetStdHandle',\
-        ReadFile,'ReadFile'
+        ReadFile,'ReadFile', \
+        GetConsoleScreenBufferInfo,'GetConsoleScreenBufferInfo', \
+        FillConsoleOutputCharacter,'FillConsoleOutputCharacter', \
+        SetConsoleCursorPosition,'SetConsoleCursorPosition'
 
 import  msvcrt,\
         printf, 'printf',\
