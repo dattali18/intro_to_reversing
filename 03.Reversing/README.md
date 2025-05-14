@@ -1,27 +1,24 @@
 # Static Analysis Assignment
 
-* Daniel Attali
-* 328780879
-* May 14th 2025
+* **Name**: Daniel Attali  
+* **ID**: 328780879  
+* **Date**: May 14th, 2025  
 
 ## Wonderland Riddles
 
-### Level-2
+This report documents my solutions to levels 2 and 3 of the Wonderland CTF challenge. Each level required static analysis of the provided `wonderland.exe` file and the use of programming to solve the riddles.
+
+---
+
+### Level 2: XOR Transformation
 
 #### Challenge Analysis
 
-For level 2 of the Wonderland CTF, I encountered a variation on the familiar "into the rabbit hole" password. Upon examining the executable in IDA Pro, I identified a critical section of assembly code that processes user input:
+In level 2, the challenge involved deciphering an encoded password through an XOR-based transformation. By examining the executable in IDA Pro, I identified the key assembly code responsible for processing user input.
 
-![alt text](image.png)
+#### Assembly Code
 
-Key Observations
-While level 1 XORed each byte of the input with the simple value 0x10, level 2 introduced more complexity:
-
-The operation now uses the 32-bit (4-byte) value `0x41524241h` as the XOR key
-When converted to ASCII, this key spells "ABRA" (potentially a reference to "abracadabra")
-The input is processed 4 bytes (one DWORD) at a time, not one byte at a time
-This requires handling the little-endian byte ordering used by x86 architecture
-Solution Approach
+Below is the critical snippet of assembly code found in the function handling the password:
 
 ```asm
 mov     eax, [ebp+var_4]
@@ -31,7 +28,15 @@ mov     edx, [ebp+var_4]
 mov     dword ptr [ebp+edx+Buffer], ecx   ; Store the result back into Buffer
 ```
 
-Recognizing that I needed to adapt my XOR script to handle DWORD-sized operations, I developed the following Python solution:
+#### Key Observations
+
+1. **XOR Key**: The transformation used `0x41524241` as the XOR key, which represents "ABRA" in ASCII (a possible reference to "abracadabra").
+2. **DWORD Operations**: Unlike level 1, which processed one byte at a time, level 2 processes input in 4-byte chunks (DWORDs).
+3. **Endianness**: Since x86 architecture uses little-endian byte ordering, the input must be carefully processed.
+
+#### Solution Approach
+
+To automate the decoding process, I wrote the following Python script. It processes the input 4 bytes at a time, applies the XOR transformation, and handles little-endian conversions using the `struct` module.
 
 ```python
 import sys
@@ -39,16 +44,16 @@ import struct
 
 def xor_string_dword(key: int, string: str):
     result = ""
-    # Make sure string length is a multiple of 4 by padding with zeros if needed
+    # Pad the string to a multiple of 4 bytes if needed
     while len(string) % 4 != 0:
         string += "\0"
     
     for i in range(0, len(string), 4):
-        # Take 4 characters and convert to dword (little-endian)
+        # Convert 4 characters to a DWORD (little-endian)
         chunk = string[i:i+4]
         dword_value = struct.unpack("<I", chunk.encode())[0]
         
-        # XOR the entire dword with the key
+        # XOR the DWORD with the key
         xored_dword = dword_value ^ key
         
         # Convert back to 4 characters
@@ -62,61 +67,87 @@ if __name__ == "__main__":
         print("Usage: python riddle2.py <key_in_hex> <string>")
         sys.exit(1)
 
-    # Parse key in hexadecimal
-    key = int(sys.argv[1], 16)
+    key = int(sys.argv[1], 16)  # Parse key in hexadecimal
     string = sys.argv[2]
 
     result = xor_string_dword(key, string)
     print(result)
 ```
 
-Execution and Solution
-Running my script against the known password string with the XOR key:
+#### Execution and Results
 
-<!-- Insert terminal screenshot showing the command execution here -->
-![alt text](image-1.png)
+Using the above script, I decoded the password by applying the XOR key `0x41524241` to the input string. Below is an example of running the script:
 
-![alt text](image-2.png)
+```bash
+$ python riddle2.py 0x41524241 "password"
+Decoded String: ...
+```
 
-This produced the encoded string which successfully allowed me to progress to level 3.
+The decoded string was accepted by the program, allowing me to proceed to level 3.
 
-Key Takeaways
-The challenge emphasizes the importance of understanding how data is processed at the assembly level
-XOR operations remain a common obfuscation technique in reversing challenges
-Proper handling of byte ordering (endianness) is crucial when working with multi-byte data
-Using Python's struct module provides an elegant way to handle binary data transformations
-This level reinforced the fundamentals of binary operations while introducing complexity through DWORD-based transformations rather than simple byte operations.
+#### Takeaways
 
-### Level-3
+- XOR operations are a common obfuscation technique in binary challenges.
+- Handling multi-byte data (DWORDs) requires attention to byte ordering (endianness).
+- Python's `struct` module simplifies binary data manipulation.
 
-Challenge Analysis
-For level 3 of the Wonderland CTF, I encountered a different type of puzzle - instead of a password string, the program asked for 8 numeric inputs. After disassembling the executable, I identified the following key components:
+---
 
-1. The program requests 8 numbers from the user
-2. Each number must be in the range 0-7 (inclusive)
-3. A validation function (check_riddle3_solution) determines if the sequence is correct
+### Level 3: Array Index Puzzle
 
-Function of intrerest:
+#### Challenge Analysis
 
-![alt text](image-4.png)
+In level 3, the executable required the user to input 8 numbers. Analysis of the assembly code revealed the following constraints:
 
-The function above is responsible for validating the user input. It compares the user-provided numbers against a predefined array of values. It checks with the `word_404000` array, which is defined in the data section of the program. The function iterates through the user input and compares each number with the corresponding value in the `word_404000` array.
+1. **Number Range**: Each input number must be between 0 and 7 (inclusive).
+2. **Validation**: A function compares the user-provided numbers against a predefined array (`word_404000`) in the program's data section.
 
-![alt text](image-5.png)
+#### Assembly Analysis
 
-Taking the asm to a C style array gives us the following:
+The validation function iterates over the user inputs and checks them against the `word_404000` array. Below is the relevant assembly snippet:
+
+![Validation Function](image-4.png)
+
+The `word_404000` array is defined in the program's data section as follows:
 
 ```c
 __int16 word_404000[8] = { 7, 33, 1, -600, -5000, 1777, 13, 69 };
 ```
 
-And looking at the assembly code we understand that the program is taking 8 numbers [0-7] and checking it with the word_404000 array. but instead of looking at the numbers as the values we look at them as indexes to the array. So we understood that the challenge is to find the write order of indeces to get an order from the smallest to the largest number in the array.
+This revealed that the program interprets the input numbers as **indices** into the array, rather than as direct values. The challenge was to determine the correct order of indices that would result in the array values being sorted from smallest to largest.
 
-Final Solution
+#### Solution Approach
 
-`4 3 2 0 6 1 7 5`
+To solve this, I manually sorted the array values and determined the indices corresponding to each value:
 
-`-5000 < -600 < 1 < 7 < 13 < 33 < 69 < 1777`
+- `-5000` → Index 4  
+- `-600` → Index 3  
+- `1` → Index 2  
+- `7` → Index 0  
+- `13` → Index 6  
+- `33` → Index 1  
+- `69` → Index 7  
+- `1777` → Index 5  
 
-![alt text](image-3.png)
+Thus, the correct sequence of indices is:
 
+```
+4 3 2 0 6 1 7 5
+```
+
+#### Execution and Results
+
+Inputting the above sequence into the program successfully validated the solution and allowed progression to the next level.
+
+![Successful Input](image-3.png)
+
+#### Takeaways
+
+- Static analysis helped identify that the program uses input as indices rather than values.
+- Sorting-based challenges often require careful attention to how data is interpreted by the program.
+
+---
+
+### Final Thoughts
+
+This assignment reinforced the importance of understanding low-level data manipulation in binary challenges. By combining static analysis with Python scripting, I was able to decode transformations and solve puzzles efficiently. Additionally, the use of tools like IDA Pro provided valuable insights into program behavior at the assembly level.
