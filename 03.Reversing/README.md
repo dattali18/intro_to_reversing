@@ -18,6 +18,8 @@ In level 2, the challenge involved deciphering an encoded password through an XO
 
 #### Assembly Code
 
+![[image.png]]
+
 Below is the critical snippet of assembly code found in the function handling the password:
 
 ```asm
@@ -85,6 +87,9 @@ Decoded String: ...
 
 The decoded string was accepted by the program, allowing me to proceed to level 3.
 
+![[image-1.png]]
+
+![[image-2.png]]
 #### Takeaways
 
 - XOR operations are a common obfuscation technique in binary challenges.
@@ -107,6 +112,8 @@ In level 3, the executable required the user to input 8 numbers. Analysis of the
 The validation function iterates over the user inputs and checks them against the `word_404000` array. Below is the relevant assembly snippet:
 
 ![Validation Function](image-4.png)
+
+![[image-5.png]]
 
 The `word_404000` array is defined in the program's data section as follows:
 
