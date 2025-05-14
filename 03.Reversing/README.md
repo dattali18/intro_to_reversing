@@ -86,3 +86,37 @@ XOR operations remain a common obfuscation technique in reversing challenges
 Proper handling of byte ordering (endianness) is crucial when working with multi-byte data
 Using Python's struct module provides an elegant way to handle binary data transformations
 This level reinforced the fundamentals of binary operations while introducing complexity through DWORD-based transformations rather than simple byte operations.
+
+### Level-3
+
+Challenge Analysis
+For level 3 of the Wonderland CTF, I encountered a different type of puzzle - instead of a password string, the program asked for 8 numeric inputs. After disassembling the executable, I identified the following key components:
+
+1. The program requests 8 numbers from the user
+2. Each number must be in the range 0-7 (inclusive)
+3. A validation function (check_riddle3_solution) determines if the sequence is correct
+
+Function of intrerest:
+
+![alt text](image-4.png)
+
+The function above is responsible for validating the user input. It compares the user-provided numbers against a predefined array of values. It checks with the `word_404000` array, which is defined in the data section of the program. The function iterates through the user input and compares each number with the corresponding value in the `word_404000` array.
+
+![alt text](image-5.png)
+
+Taking the asm to a C style array gives us the following:
+
+```c
+__int16 word_404000[8] = { 7, 33, 1, -600, -5000, 1777, 13, 69 };
+```
+
+And looking at the assembly code we understand that the program is taking 8 numbers [0-7] and checking it with the word_404000 array. but instead of looking at the numbers as the values we look at them as indexes to the array. So we understood that the challenge is to find the write order of indeces to get an order from the smallest to the largest number in the array.
+
+Final Solution
+
+`4 3 2 0 6 1 7 5`
+
+`-5000 < -600 < 1 < 7 < 13 < 33 < 69 < 1777`
+
+![alt text](image-3.png)
+
