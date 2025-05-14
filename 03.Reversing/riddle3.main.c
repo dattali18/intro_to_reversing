@@ -2,16 +2,21 @@
 
 int __cdecl main(int argc, const char **argv, const char **envp)
 {
-  int v4;  // [esp+0h] [ebp-Ch]
-  int v5;  // [esp+4h] [ebp-8h] BYREF
+  int a;  // [esp+0h] [ebp-Ch]
+  int b;  // [esp+4h] [ebp-8h] BYREF
 
-  scanf("%d", v5);
-  v4 = user_defined(*(int *)v5);
-  printf("Num %d took total %d iterations\n", v5, v4);
+  scanf("%d", &b);
+
+  a = collatz_conjecture(b);
+
+  printf("Num %d took total %d iterations\n", b, a);
+
   return 0;
 }
 
-int __cdecl user_defined(int a1)
+/// Count the number of iterations until the number reaches 1
+/// according to the Collatz conjecture.
+int __cdecl collatz_conjecture(int a1)
 {
   int v2; // [esp+0h] [ebp-4h]
 
