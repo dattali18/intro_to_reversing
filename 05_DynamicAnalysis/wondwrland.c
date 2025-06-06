@@ -25,7 +25,7 @@ int level_3();
 int __cdecl level_3_check_input(unsigned int16_t *a1);
 int level_4();
 int level_5();
-BOOL __cdecl sub_401770(int a1);
+BOOL __cdecl level_5_check(int a1);
 int level_6();
 int __cdecl sub_401910(_BYTE *a1);
 size_t __cdecl sub_401950(char *Str);
@@ -426,7 +426,7 @@ int level_5()
       CloseHandle(hFile);
     }
     CloseHandle(hFile);
-    if ( sub_401770((int)v2) )
+    if ( level_5_check((int)v2) )
       break;
     printf(aYouAreLost);
   }
@@ -434,12 +434,12 @@ int level_5()
 }
 
 //----- (00401770) --------------------------------------------------------
-BOOL __cdecl sub_401770(int a1)
+BOOL __cdecl level_5_check(int a1)
 {
   int v2; // [esp+4h] [ebp-Ch]
   char *v3; // [esp+Ch] [ebp-4h]
 
-  v3 = strchr(Str, 79);
+  v3 = strchr(Str, 79); // "O"
   v2 = 0;
   while ( 2 )
   {

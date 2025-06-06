@@ -23,3 +23,54 @@ And the program output was `"Cheater ..."` so we understood that there was a che
 So we gave as input the address at which we put (at runtime) the string (i.e. `0x0019FF08`) and got the following screen
 
 ![sucess](sucess.png)
+
+### Level 5
+
+In this level we see function call like `ReadFile` with options (only if already existed)
+
+![alt text](image-4.png)
+
+So we try and input file name `test.txt` and it didn't work then we try to crate the file first and
+then input the name and we got through the first stage and now we needed to understand what the function, so we understood that the program read the file at tha path specified and read into a buffer and then it calls a function (I named it `level_5_check`) and if this function return anything other than `0` we solve the riddle
+
+![alt text](image-5.png)
+
+This function as a switch case form, so we took a look and found we use the `strchr` function with `79` which is `'O'` in ASCII and this function return the first position of a char in a string so we converted the Str string into a more readable form and got: 
+
+```text
+"###################O####...########.##...#.########.##.###.########....###...X##################"
+```
+
+And then we took at look at the switch statement and saw the following:
+
+1. `case 1:` we move the sort of cursor `+1` so right
+2. `case 2:` we do `+16` meaning we jump a line (so the we need to divide the line into chunks of 16)
+3. `case 3:` we do `-1` so we move left
+4. `case 4:` we do `-16` so we jump a line (up)
+
+So after that we took the sting and made a 16x6 matrix and got the following
+
+```maze.txt
+################
+###O####...#####
+###.##...#.#####
+###.##.###.#####
+###....###...X##
+################
+```
+
+So we understood that this is a maze and we start at `'O'` and finish at `'X'` (X mark the spot) and the `'#'` are walls and the `'.'` is the path.
+
+Solution is:
+
+```text
+DDDRRRUURRURRDDDRRR
+```
+
+```text
+2221114411411222111
+```
+
+So we put into the `text.txt` file the solution and got the right answer
+
+![alt text](image-3.png)
