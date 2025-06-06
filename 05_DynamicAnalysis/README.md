@@ -1,4 +1,11 @@
+---
+Author: Daniel Attali
+Date: 2025-06-06
+---
 # 05 Dynamic Analysis
+
+Author: Daniel Attali
+Date: 06/06/2025
 
 ## Wonderland.exe 
 
