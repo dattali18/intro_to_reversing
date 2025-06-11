@@ -23,13 +23,15 @@ So the first Idea was to give as an input the address of the `Str` variable (The
 
 And the program output was `"Cheater ..."` so we understood that there was a check to see if `Str == Str1` so we had to give the program an address of a string that was `"Good luck!!"` while at the same time not being the same address of `Str`, the trick was to do it dynamically so we found the a random address and put the the string `"Good luck!!"` and gave the address as input
 
-![alt text](image-1.png)
+So the idea was to use the search functionality of ida to search for a `"Good luck!!"` string in the .exe and then we found the obvious answer
 
-![alt text](image-2.png)
+![alt text](image-7.png)
 
-So we gave as input the address at which we put (at runtime) the string (i.e. `0x0019FF08`) and got the following screen
+The address of the success string `0x00404738 + 0x6` = `4212542`
 
-![sucess](sucess.png)
+And when giving this address to the program we get the success screen
+
+![alt text](image-6.png)
 
 ### Level 5
 
