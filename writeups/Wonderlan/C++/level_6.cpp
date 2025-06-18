@@ -75,3 +75,6 @@ void level_6() {
     }
 }
 
+int main() {
+    level_6();
+}
