@@ -560,13 +560,13 @@ _UNKNOWN ****__cdecl sub_401A80(_BYTE *a1)
   v3 = off_404090;
   while ( *a1 )
   {
-    if ( *a1 == 76 )
+    if ( *a1 == 76 ) // L
     {
       v3 = (_UNKNOWN *****)v3[1];
     }
     else
     {
-      if ( *a1 != 82 )
+      if ( *a1 != 82 ) // R
         return 0;
       v3 = (_UNKNOWN *****)*v3;
     }
