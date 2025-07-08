@@ -10,9 +10,7 @@ undefined * FUN_00401000(void)
 
 
 
-void __cdecl
-FUN_00401010(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
-
+void __cdecl FUN_00401010(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
 {
   undefined4 *puVar1;
   
@@ -39,8 +37,7 @@ undefined4 __cdecl FUN_00401040(undefined4 param_1)
 
 
 
-void FUN_00401080(void)
-
+void stage_1_main(void)
 {
   char cVar1;
   errno_t eVar2;
@@ -102,7 +99,6 @@ void FUN_00401080(void)
 
 
 void __cdecl print_str_typewriter(char *param_1)
-
 {
   FILE *_File;
   
@@ -118,20 +114,20 @@ void __cdecl print_str_typewriter(char *param_1)
 
 
 
-int __cdecl FUN_004012e0(int param_1)
+int __cdecl take_n_and_transform(int param_1)
 
 {
   int iVar1;
   
   iVar1 = param_1 % 3;
   if (iVar1 == 0) {
-    iVar1 = param_1 << 1;
+    iVar1 = param_1 * 2;
   }
   else if (iVar1 == 1) {
     iVar1 = param_1 + 100;
   }
   else if (iVar1 == 2) {
-    iVar1 = param_1 + -0x32;
+    iVar1 = param_1 -50;
   }
   else {
     iVar1 = 0;
@@ -152,15 +148,15 @@ void FUN_00401330(void)
   for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
     local_c = local_8 * 7 ^ local_c;
   }
-  uVar1 = FUN_004012e0(local_c);
-  FUN_00401430();
-  FUN_00401390(local_c,uVar1);
+  uVar1 = take_n_and_transform(local_c);
+  stage_1();
+  always_return_0(local_c,uVar1);
   return;
 }
 
 
 
-int __cdecl FUN_00401390(uint param_1,uint param_2)
+int __cdecl always_return_0(uint param_1,uint param_2)
 
 {
   return ((param_1 ^ param_2) + (param_1 & param_2)) - (param_1 | param_2);
@@ -192,7 +188,7 @@ void __cdecl FUN_004013b0(char *param_1)
 
 
 
-void FUN_00401430(void)
+void stage_1(void)
 
 {
   char cVar1;
@@ -288,7 +284,7 @@ void FUN_00401430(void)
       print_str_typewriter(
                   "Great job. Anti aircraft system is disabled\n\nStage 2: You are a jet fighter pilot. The sky is clear. Your mission: release bombs on IRGC headquarters.\nTo find them, use the cyber intelligence unit\n"
                   );
-      FUN_00401080();
+      stage_1_main();
     }
   }
   FUN_00401ac4(local_8 ^ (uint)&stack0xfffffffc);
